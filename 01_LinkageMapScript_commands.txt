@@ -1,0 +1,442 @@
+########################################################################################################################
+########################################################################################################################
+#	LINKAGE MAPPING SCRIPT FROM RAW READS TO FILTERED VCF FILE - X1 CROSS OF C.SP ALBOCK MUM AND DAD ARE 1x400 and 1x800
+########################################################################################################################
+########################################################################################################################
+#map is made up of 4 offspring rad libraries GQI119, 120 121 126 and one parent library GQI122
+
+
+#################################################
+#################################################
+# PARENTS
+#################################################
+#################################################
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load gcc/4.8.2 gdc java/1.8.0_73 trimmomatic/0.35; trimmomatic SE -threads 2 -phred33 /cluster/project/gdc/shared/p298/data/GQI122Part1/GQI122Part1.fastq /cluster/project/gdc/shared/p298/data/GQI122Part1/GQI122Part1Qual30.trim.fastq LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:50 AVGQUAL:30"
+#Input Reads: 90040456 Surviving: 82022671 (91.10%) Dropped: 8017785 (8.90%)
+
+#now fastqc on these reads:
+bsub -n1 -W 4:00 -R "rusage[mem=10000]" "module load java gdc fastqc/0.11.4; fastqc /cluster/project/gdc/shared/p298/data/GQI122Part1/GQI122Part1Qual30.trim.fastq"
+
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc bowtie2/2.2.3; PhiX_removal.sh /cluster/project/gdc/shared/p298/data/GQI122Part1/GQI122Part1Qual30.trim.fastq GQI122Qual30Part1"
+#82022671 reads; of these:
+#  82022671 (100.00%) were unpaired; of these:
+#    55024399 (67.08%) aligned 0 times
+##    26998272 (32.92%) aligned exactly 1 time
+#    0 (0.00%) aligned >1 times
+#32.92% overall alignment rate
+
+#number of sbf cutsites - 
+bsub -n1 -W 4:00 -R "rusage[mem=10000]" "module load java gdc; grep "^@HISEQ" -A 1 GQI122Qual30Part1.noPhiXreads.fastq | \
+cut -c 1-14 | grep "TGCAGG" -c"
+##RESULT 53295512
+
+#number of total reads
+bsub -W 8:00 -Is /bin/bash
+expr $(cat GQI122Qual30Part1.noPhiXreads.fastq | wc -l) / 4
+##RESULT 55024399
+
+##just going ahead with this part 1 due to likely better quality - should still be very high coverage per parent
+bsub -W 24:00 -Is /bin/bash
+module load java gdc;
+module load gcc/4.9.2;
+module load stacks/1.40;
+module load perl/5.18.4;
+perl-init
+#then run demultiplexing script - make sure the fastq file is in the directory you run the sh script from:
+/cluster/project/gdc/shared/p129/bin/demultiplexing.sh ./GQI122Qual30Part1.noPhiXreads.fastq /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI122Part1/GQI122Barcodes /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI122Qual30Part1/ 90
+
+scp /cluster/project/gdc/shared/p129/bin/header_recoverfromstacks.sh .
+
+./header_recoverfromstacks.sh /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI122Qual30Part1/Samples/ /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI122Part1/GQI122Barcodes /cluster/project/gdc/shared/p298/data/GQI122Part1/GQI122Part1.fastq 
+
+#then count lines in each new file:
+#get list of counts
+for i in *.x1.GQI122.fastq ; do  
+	echo $i | cat $i | wc -l 
+done > GQI122Part1Individual_Readcounts.txt
+
+
+#################################################
+#################################################
+# Denovo reference production
+#################################################
+#################################################
+#concatenate both parental fastq files
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc; cat /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI122Qual30Part1/400.x1.GQI122.fastq /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI122Qual30Part1/800.x1.GQI122.fastq >> /cluster/project/gdc/shared/p298/Rishi/parents/ConcatForDenovoParentsQ30.fastq"
+
+#ustacks aligns reads into putitive alleles. parallised with 3 threads (p) file type (t) minimum depth of coverage needed to make a stack (m20)
+bsub -n3 -W 24:00 -R "rusage[mem=10000]" "module load java gdc gcc/4.9.2 stacks/1.40; ustacks -p 3 -t fastq -f /cluster/project/gdc/shared/p298/Rishi/parents/ConcatForDenovoParentsQ30.fastq \
+-m 20 -r "
+
+#see how many consensus stacks you have left
+grep -c -E consensus ConcatForDenovoParentsQ30.tags.tsv
+##RESULTS 76692
+
+#make the fasta file reference from these consensus stacks using awk - all parentQ30 files are now listed as Cor_Denovo
+grep -E "consensus" ConcatForDenovoParentsQ30.tags.tsv | awk '{if ($10==0) print ">consensus_"$3"\n"$7}' > Cor_DenovoParentsQ30.fasta
+
+#make build with bowtie to give index for later processing
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc gcc/4.9.2 stacks/1.40 bowtie2/2.2.3; bowtie2-build -f Cor_DenovoParentsQ30.fasta index"
+
+
+#################################################
+#################################################
+# OFFSPRING LIBRARIES
+#################################################
+#################################################
+#with my data for lib GQI119
+# first needed a text file in the data folder of all the http addresses
+#then use  
+wget -i DataDownload.txt 
+
+#next we want to concatenate files and unzip the files to do a fastqc report
+zcat GQI119*.fastq.gz > GQI119.fastq
+
+#this unfortunately timed out on the interactive node so now submitted as a job with 24 hours wall time
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc; zcat GQI119*.fastq.gz > GQI119.fastq"
+
+#next to use fastqc to see the quality of the reads
+#this asks to join the 4 hour job queue, using 10Gb RAM and then the command
+#the command specifies to load the gdc module, the fastqc module (check version with module load gdc and then module avail
+# and then gives the zipped fastqc file to identify quailty in
+bsub -n1 -W 4:00 -R "rusage[mem=10000]" "module load java gdc fastqc/0.11.4; fastqc GQI119.fastq"
+
+#then move data to my computer- in new terminal:
+scp rdekayne@euler.ethz.ch:/cluster/project/gdc/shared/p298/data/GQI119_fastqc.html .
+#and
+scp rdekayne@euler.ethz.ch:/cluster/project/gdc/shared/p298/data/GQI119_fastqc.zip .
+
+#then look at fastqc report
+
+#next to map to phix genome to check the right amount of phix was spiked
+#move pre written script to my computer and alter code
+scp rishidek@gdcsrv1:/gdc_home5/groups/p129/scripts/PhiX_removal.sh .
+
+# - had to redirect filepath to /cluster/project/gdc/shared/p129/ref-genome/phix174.fa
+#Then move back to my directory in euler. Had issue with bashrc file so:
+nano ~/.bashrc
+#now edit to add PATH to the bin folder in the p129 folder so even in my directory it will look therefor how to execute files such as the sh script from Joana and David
+source ~/.bashrc
+#can check path with echo $PATH
+
+#and to do the removal
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc; PhiX_removal.sh ../../data/GQI119.fastq GQI119"
+# OUTPUT: 163963600 (100.00%) were unpaired; of these:
+#    130071600 (79.33%) aligned 0 times
+#    33892000 (20.67%) aligned exactly 1 time - this is high, should be around 5%
+#    0 (0.00%) aligned >1 times
+
+#extract and count all reads that have complete sbf1 site within the first 14 nucleotides
+bsub -n1 -W 4:00 -R "rusage[mem=10000]" "module load java gdc; grep "^@WINDU" -A 1 GQI119.noPhiXreads.fastq | \
+cut -c 1-14 | grep "TGCAGG" -c"
+# OUTPUT 119993911
+
+#compare with count of all non-phix reads
+bsub -W 8:00 -Is /bin/bash
+expr $(cat GQI119.noPhiXreads.fastq | wc -l) / 4
+# OUTPUT 130071600
+
+#now also run alignment for the salmon genome - want to know how much is probably whitefish
+#since salmon genome is so much bigger needs higher memory so altered scrip to have more nodes, more wall time and more memory:
+bsub -n4 -W 72:00 -R "rusage[mem=30000]" "module load java gdc bowtie2; ./Salmon_removal.sh /cluster/project/gdc/shared/p298/data/GQI119.fastq GQI119"
+#163963600 reads; of these:
+#  163963600 (100.00%) were unpaired; of these:
+#    103381190 (63.05%) aligned 0 times
+#    16851280 (10.28%) aligned exactly 1 time
+#    43731130 (26.67%) aligned >1 times
+#36.95% overall alignment rate
+
+
+#now to find barcodes- get 8 nucleotides of each read, sort them and count occurences - output 10 most frequent
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "cat GQI119.noPhiXreads.fastq | cut -c 1-8 | grep -E "^[ATGC]{8}" | sort | uniq -c | sort -nr > GQI119_barcodecount.txt"
+#now barcodes file made - move to my computer
+scp rdekayne@euler.ethz.ch:/cluster/project/gdc/shared/p298/Rishi/PhiXRemoval/GQI119_barcodecount.txt . 
+
+#plotted in R
+#made barcode file and moved back, then:
+#started interactive node:
+bsub -W 24:00 -Is /bin/bash
+module load java gdc;
+module load gcc/4.9.2;
+module load stacks/1.40;
+module load perl/5.18.4;
+perl-init
+#then run demultiplexing script - make sure the fastq file is in the directory you run the sh script from:
+/cluster/project/gdc/shared/p129/bin/demultiplexing.sh ./GQI119.noPhiXreads.fastq /cluster/project/gdc/shared/p298/Rishi/PhiXRemoval/GQI119Barcodes /cluster/project/gdc/shared/p298/Rishi/Demultiplex/ 90
+#now rename files with fishec conventions and change read headers - needs old headers after process_radtags changes headers
+scp /cluster/project/gdc/shared/p129/bin/header_recoverfromstacks.sh .
+./header_recoverfromstacks.sh \ /cluster/project/gdc/shared/p298/Rishi/Demultiplex/ \ GQI119barcodes /cluster/project/gdc/shared/p298/data/GQI119.fastq
+#then count lines in each new file:
+cat 007.x1.GQI119.fastq | wc -l
+
+#loop to count reads in all files
+for i in *.x1.GQI119.fastq ; do
+ echo $i | cat wc -l
+done > GQI119Individual_Readcounts.txt
+
+wget -i DataDownloadGQI120.txt
+
+zcat GQI120*.fastq.gz > GQI120.fastq
+
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc; zcat GQI120*.fastq.gz > GQI120.fastq"
+
+bsub -n1 -W 4:00 -R "rusage[mem=10000]" "module load java gdc fastqc/0.11.4; fastqc GQI120.fastq"
+
+scp rdekayne@euler.ethz.ch:/cluster/project/gdc/shared/p298/data/GQI120_fastqc.html .
+
+#phix removal
+#took agest to figure out how to run, checked bashrc and used chmod again, also did source bashrc again...then worked....
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc bowtie2/2.2.3; PhiX_removal.sh /cluster/project/gdc/shared/p298/data/GQI120.fastq GQI120"
+#250457031 reads; of these:
+#  250457031 (100.00%) were unpaired; of these:
+#    237545264 (94.84%) aligned 0 times
+#    12911767 (5.16%) aligned exactly 1 time
+#    0 (0.00%) aligned >1 times
+#5.16% overall alignment rate
+
+#number of sbf cutsites - 
+bsub -n1 -W 4:00 -R "rusage[mem=10000]" "module load java gdc; grep "^@HISEQ" -A 1 GQI120.noPhiXreads.fastq | \
+cut -c 1-14 | grep "TGCAGG" -c"
+##RESULT 206170530
+
+#number of total reads
+bsub -W 8:00 -Is /bin/bash
+expr $(cat GQI120.noPhiXreads.fastq | wc -l) / 4
+##RESULT 237545264
+
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "cat GQI120.noPhiXreads.fastq | cut -c 1-8 | grep -E "^[ATGC]{8}" | sort | uniq -c | sort -nr > GQI120_barcodecount.txt"
+
+#need to be in directory with fastq file due to ./ in code for sh script
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc; module load gcc/4.9.2; module load stacks/1.40; module load perl/5.18.4; perl-init; /cluster/project/gdc/shared/p129/bin/demultiplexing.sh \
+GQI120.noPhiXreads.fast /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI120/GQI120Barcodes /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI120/DemultiFiles/ 90"
+
+#now to retrieve headers and rename individuals - from interactive node
+/cluster/project/gdc/shared/p129/bin/header_recoverfromstacks.sh /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI120/DemultiFiles/ /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI120/GQI120Barcodes /cluster/project/gdc/shared/p298/data/GQI120.fastq 
+
+#now to get read counts for each individual:
+cat 007.x1.GQI119.fastq | wc -l
+
+############################################################
+############################################################
+#get list of counts
+for i in *.x1.GQI120.fastq ; do  
+	echo $i | cat $i | wc -l 
+done > GQI120Individual_Readcounts.txt
+
+#get list of individual numbers
+for i in *.x1.GQI120.fastq ; do  
+	echo $i
+done > 120IndividualNames.txt
+
+#now stick them together
+paste GQI120Individual_Readcounts.txt 120IndividualNames.txt > BarcodeCountsPerIndividualGQI120.txt
+
+#and remove stupid bit from name
+sed -i "s/.x1.GQI120.fastq//" BarcodeCountsPerIndividualGQI120.txt
+
+#new GQI121 lib
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load gdc java; zcat GQI121*.fastq.gz > GQI121.fastq"
+bsub -n1 -W 4:00 -R "rusage[mem=10000]" "module load java gdc fastqc/0.11.4; fastqc GQI121.fastq"
+
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc bowtie2/2.2.3; PhiX_removal.sh /cluster/project/gdc/shared/p298/data/GQI121.fastq GQI121"
+#172459229 reads; of these:
+#  172459229 (100.00%) were unpaired; of these:
+#    144668966 (83.89%) aligned 0 times
+#    27790263 (16.11%) aligned exactly 1 time
+#    0 (0.00%) aligned >1 times
+#16.11% overall alignment rate
+
+
+#all phix reads
+expr $(cat GQI121.noPhiXreads.fastq | wc -l) / 4
+#OUTPUT 144668966
+
+#reads with sbf1 cut site
+module load java gdc; grep ^@WINDU -A 1 GQI121.noPhiXreads.fastq | cut -c 1-14 | grep TGCAGG -c
+#OUTPUT 137622709
+
+
+#started interactive node:
+bsub -W 24:00 -Is /bin/bash
+module load java gdc;
+module load gcc/4.9.2;
+module load stacks/1.40;
+module load perl/5.18.4;
+perl-init
+#then run demultiplexing script - make sure the fastq file is in the directory you run the sh script from:
+/cluster/project/gdc/shared/p129/bin/demultiplexing.sh ./GQI121.noPhiXreads.fastq /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI121/GQI121Barcodes /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI121/ 90
+
+#now rename files with fishec conventions and change read headers - needs old headers after process_radtags changes headers
+scp /cluster/project/gdc/shared/p129/bin/header_recoverfromstacks.sh .
+./header_recoverfromstacks.sh /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI121/Samples/ /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI121/GQI121Barcodes /cluster/project/gdc/shared/p298/data/GQI121.fastq 
+
+#then count lines in each new file:
+#get list of counts
+for i in *.x1.GQI121.fastq ; do  
+	echo $i | cat $i | wc -l 
+done > GQI121Individual_Readcounts.txt
+
+#get list of individual numbers
+for i in *.x1.GQI121.fastq ; do  
+	echo $i
+done > 121IndividualNames.txt
+
+#now stick them together
+paste GQI121Individual_Readcounts.txt 121IndividualNames.txt > BarcodeCountsPerIndividualGQI121.txt
+
+#and remove stupid bit from name
+sed -i "s/.x1.GQI121.fastq//" BarcodeCountsPerIndividualGQI121.txt
+
+#Salmon read removal
+# run from scratch /cluster/scratch/rdekayne
+bsub -n4 -W 120:00 -R "rusage[mem=20000]" "module load java gdc bowtie2; ./Salmon_removal.sh /cluster/project/gdc/shared/p298/data/GQI120.fastq GQI120"
+# 250457031 reads; of these:
+#  250457031 (100.00%) were unpaired; of these:
+#    145991146 (58.29%) aligned 0 times
+#    29830991 (11.91%) aligned exactly 1 time
+#    74634894 (29.80%) aligned >1 times
+#41.71% overall alignment rate
+
+#and GQI121
+#172459229 reads; of these:
+#  172459229 (100.00%) were unpaired; of these:
+#   102958179 (59.70%) aligned 0 times
+#    19586269 (11.36%) aligned exactly 1 time
+#    49914781 (28.94%) aligned >1 times
+#40.30% overall alignment rate
+
+##################################################################################################################
+##################################################################################################################
+#					now processing library GQI126
+##################################################################################################################
+##################################################################################################################
+#with my data for lib GQI126
+# first needed a text file in the data folder of all the http addresses
+#then use  
+wget -i DataDownloadGQI126.txt 
+
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc; zcat GQI126*.fastq.gz > /cluster/project/gdc/shared/p298/data/GQI126.fastq"
+
+#next to use fastqc to see the quality of the reads
+#this asks to join the 4 hour job queue, using 10Gb RAM and then the command
+#the command specifies to load the gdc module, the fastqc module (check version with module load gdc and then module avail
+# and then gives the zipped fastqc file to identify quailty in
+bsub -n1 -W 4:00 -R "rusage[mem=10000]" "module load java gdc fastqc/0.11.4; fastqc GQI126.fastq"
+
+
+#and to do the removal
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc bowtie2/2.2.6; PhiX_removal.sh /cluster/project/gdc/shared/p298/data/GQI126.fastq GQI126"
+# 159854258 reads; of these:
+#  159854258 (100.00%) were unpaired; of these:
+#    151240935 (94.61%) aligned 0 times
+#    8613323 (5.39%) aligned exactly 1 time
+#    0 (0.00%) aligned >1 times
+#5.39% overall alignment rate
+
+
+#extract and count all reads that have complete sbf1 site within the first 14 nucleotides
+bsub -n1 -W 4:00 -R "rusage[mem=10000]" "module load java gdc; grep "^@WINDU" -A 1 GQI126.noPhiXreads.fastq | \
+cut -c 1-14 | grep "TGCAGG" -c"
+# 144408199
+
+#compare with count of all non-phix reads
+bsub -W 8:00 -Is /bin/bash
+expr $(cat GQI126.noPhiXreads.fastq | wc -l) / 4
+# 151240935
+
+#now also run alignment for the salmon genome - want to know how much is probably whitefish
+#since salmon genome is so much bigger needs higher memory so altered scrip to have more nodes, more wall time and more memory:
+bsub -n4 -W 72:00 -R "rusage[mem=10000]" "module load java gdc bowtie2; ./Salmon_removal.sh /cluster/project/gdc/shared/p298/data/GQI126.fastq GQI126"
+#159854258 reads; of these:
+#  159854258 (100.00%) were unpaired; of these:
+#    85386649 (53.42%) aligned 0 times
+#    20680613 (12.94%) aligned exactly 1 time
+#    53786996 (33.65%) aligned >1 times
+#46.58% overall alignment rate
+
+#started interactive node:
+bsub -W 24:00 -Is /bin/bash
+module load java gdc;
+module load gcc/4.9.2;
+module load stacks/1.40;
+module load perl/5.18.4;
+perl-init
+#then run demultiplexing script - make sure the fastq file is in the directory you run the sh script from:
+/cluster/project/gdc/shared/p129/bin/demultiplexing.sh ./GQI126.noPhiXreads.fastq /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI126/GQI126Barcodes /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI126/ 90
+
+#now rename files with fishec conventions and change read headers - needs old headers after process_radtags changes headers
+scp /cluster/project/gdc/shared/p129/bin/header_recoverfromstacks.sh .
+./header_recoverfromstacks.sh /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI126/Samples/ /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI126/GQI126Barcodes /cluster/project/gdc/shared/p298/data/GQI126.fastq 
+
+#then count lines in each new file:
+#get list of counts
+for i in *.x1.GQI126.fastq ; do  
+	echo $i | cat $i | wc -l 
+done > GQI126Individual_Readcounts.txt
+
+#get list of individual numbers
+for i in *.x1.GQI126.fastq ; do  
+	echo $i
+done > 126IndividualNames.txt
+
+#now stick them together
+paste GQI126Individual_Readcounts.txt 126IndividualNames.txt > BarcodeCountsPerIndividualGQI126.txt
+
+#and remove stupid bit from name
+sed -i "s/.x1.GQI126.fastq//" BarcodeCountsPerIndividualGQI126.txt
+
+##
+get rid of 61 and 110 < 1000000 reads
+get rid of 98, 124 < 1000000 reads
+get rid of 19, 100, 121, 125, 145, 149, 150, 157, 158, 162, 
+#get rid of 309, 314, 316, 317, 320, 328 since < 1000000 reads
+## stored in /cluster/project/gdc/shared/p298/Rishi/RejectedIndividuals
+
+###################################################################################################################
+###################################################################################################################
+#					FROM OFFSPRING FASTAS and PARENT INDEX to VCF
+###################################################################################################################
+###################################################################################################################
+
+#already got parent Q30 fasta index - all zipped fastq files are in Allx1Fastas file - modified runBowtie2RADID.sh to use .gz files - move into Allx1Fastas folder
+bsub -n4 -W 24:00 -R "rusage[mem=10000]" "module load java gdc gcc/4.9.2 stacks/1.40 bowtie2/2.2.3; /cluster/project/gdc/shared/p298/Rishi/runBowtie2RADID.sh /cluster/project/gdc/shared/p298/Rishi/parents/index > CorDenovoParentsQ30TOTAL_Bowtie2log.txt"
+#########
+
+for i in *.bowtie2.bam ; do
+ echo $i
+ samtools view $i | wc -l
+done > Cor_DenovoParentsQ30TOTAL_Bam_Readcounts.txt
+
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc samtools/1.2; samtools faidx /cluster/project/gdc/shared/p298/Rishi/parents/Cor_DenovoParentsQ30.fasta"
+
+bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc gatk/3.7 picard-tools/2.0.1; java -jar /cluster/project/gdc/shared/p129/bin/picard.jar CreateSequenceDictionary R= Cor_DenovoParentsQ30.fasta O= Cor_DenovoParentsQ30.dict"
+
+#now to make vcf/call genotypes --genotyping_mode <DISCOVERY> \ --output_mode EMIT_ALL_CONFIDENT_SITES \ --min_base_quality_score 20 \ -stand_call_conf 20 \ --genotype_likelihoods_model BOTH \
+
+bsub -n5 -W 90:00 -R "rusage[mem=10000]" "module load java gdc; ./GATKHaploCaller.sh" 
+
+
+#to zip all files in directory
+for i in *.fastq; do gzip "$i"; done
+
+#then filter vcf file
+bsub -n1 -W 24:00 -R "rusage[mem=20000]" "module load java gdc gcc/4.9.2 stacks/1.40 bowtie2/2.2.3 vcftools/0.1.14 ;vcftools --gzvcf ConcatParentsQ30Thresh20HaploCalled_Total.vcf --max-missing 0.5 --mac 3 --minQ 30 --min-alleles 2 --max-alleles 2 --remove-indels --recode --recode-INFO-all --out ConcatParentsQ30Thresh20HaploCalled_Total.g5mac3.biallelic"
+#after filtering, kept 20635 out of a possible 210941 Sites
+#Run Time = 10.00 seconds
+
+
+
+##################################################################################################################
+#STAMPY
+module load gcc/4.8.2 gdc python/2.7.11 stampy/1.0.22
+
+#basic command for mapping
+bsub -n1 -W 48:00 -R "rusage[mem=20000]" "module load gcc/4.8.2 gdc python/2.7.11 stampy/1.0.22; stampy.py; stampy.py -g /cluster/project/gdc/shared/p298/SalmonGenome/GCF_000233375.1_ICSASG_v2_genomic -h /cluster/project/gdc/shared/p298/SalmonGenome/GCF_000233375.1_ICSASG_v2_genomic -M /cluster/project/gdc/shared/p298/Rishi/parents/Cor_DenovoParentsQ30.fasta -o /cluster/project/gdc/shared/p298/Rishi/Stampy/StampyTrial"
+
+
+#map with divergence
+bsub -n1 -W 48:00 -R "rusage[mem=20000]" "module load gcc/4.8.2 gdc python/2.7.11 stampy/1.0.22; stampy.py -g /cluster/project/gdc/shared/p298/SalmonGenome/GCF_000233375.1_ICSASG_v2_genomic -h /cluster/project/gdc/shared/p298/SalmonGenome/GCF_000233375.1_ICSASG_v2_genomic --substitutionrate=0.05 -M /cluster/project/gdc/shared/p298/Rishi/parents/Cor_DenovoParentsQ30.fasta -o Stampy.05.sam -f sam"
+
+bsub -n1 -W 48:00 -R "rusage[mem=20000]" "module load gcc/4.8.2 gdc python/2.7.11 stampy/1.0.22; stampy.py -g /cluster/project/gdc/shared/p298/SalmonGenome/GCF_000233375.1_ICSASG_v2_genomic -h /cluster/project/gdc/shared/p298/SalmonGenome/GCF_000233375.1_ICSASG_v2_genomic --substitutionrate=0.07 -M /cluster/project/gdc/shared/p298/Rishi/parents/Cor_DenovoParentsQ30.fasta -o Stampy.07.sam -f sam"
+
+

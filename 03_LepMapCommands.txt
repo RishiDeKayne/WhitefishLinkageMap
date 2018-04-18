@@ -1,0 +1,139 @@
+#lepmap 3
+#input file made from '02_PrepareLepmapInput_fromSexinfo_and_genotypeinfo.ipynb'
+#############################################################################################
+#with 158nohomozygous.linkage
+bsub -W 24:00 -Is /bin/bash
+awk -f /cluster/project/gdc/shared/p298/Rishi/scripts/linkage2post.awk 158nohomozygous.linkage > rishiPosteriors.txt
+java -cp /cluster/project/gdc/shared/scripts/scripts/lepmap2/bin/ Transpose rishiPosteriors.txt > rishiPosteriors_Transposed.txt
+java -cp /cluster/project/gdc/shared/scripts/scripts/lepmap3/bin/ ParentCall2 data=rishiPosteriors_Transposed.txt > Rishi_imputed_parents.call
+#No grandparents present in family 1
+#Number of individuals = 156
+#Number of families = 1
+#Number of called markers = 9757 (7800 informative)
+#Number of called Z/X markers = 0
+
+#before removal of ./. and missing data was:
+#Number of called markers = 10182 (8145 informative)
+
+
+java -cp /cluster/project/gdc/shared/tools/lepmap3/bin/ Filtering2 data=Rishi_imputed_parents.call dataTolerance=0.001 >Rdata_f.call
+chi^2 limits are 10.8271484375, 13.8154296875, 16.265625
+No grandparents present in family 1
+Number of individuals = 156
+Number of families = 1
+Number of markers = 9757
+
+
+#java -cp /cluster/project/gdc/shared/scripts/scripts/lepmap3/bin/ SeparateChromosomes2 data=Rdata_f.call lodLimit=14 sizeLimit=25 >map14.txt
+#Number of LGs = 40, markers in LGs = 5597, singles = 585
+
+java -cp /cluster/project/gdc/shared/tools/lepmap3/bin/ SeparateChromosomes2 data=Rdata_f.call lodLimit=16 sizeLimit=25 >map16.txt
+Number of LGs = 40, markers in LGs = 5395, singles = 4362
+
+
+#no longer using join singles since more stringent this way
+#following paper by davey et al. on biorxive maybe higher lod score is essential - may remove errors
+#java -cp /cluster/project/gdc/shared/scripts/scripts/lepmap3/bin/ JoinSingles2All map=map15.txt data=Rdata_f.call lodLimit=30 >map15_LOD30_js.txt
+
+
+#then run: submit.lepmapSA.cmds.lsf etc. scripts
+
+for FILE in SA1/*.SA*.txt; do sed -n '2p' $FILE; done > SA1/SA_01_Likelihoods.txt
+for FILE in SA2/*.SA*.txt; do sed -n '2p' $FILE; done > SA2/SA_02_Likelihoods.txt
+for FILE in SA3/*.SA*.txt; do sed -n '2p' $FILE; done > SA3/SA_03_Likelihoods.txt
+
+
+for FILE in SS1/*.SS*.txt; do sed -n '2p' $FILE; done > SS1/SS_01_Likelihoods.txt
+for FILE in SS2/*.SS*.txt; do sed -n '2p' $FILE; done > SS2/SS_02_Likelihoods.txt
+for FILE in SS3/*.SS*.txt; do sed -n '2p' $FILE; done > SS3/SS_03_Likelihoods.txt
+
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA2/order.SA10.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA1/order.SA11.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA12.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA1/order.SA13.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA2/order.SA14.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA1/order.SA15.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA2/order.SA16.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA17.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA18.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA19.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA1.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA20.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA21.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA2/order.SA22.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA2/order.SA23.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA24.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA25.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA1/order.SA26.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA1/order.SA27.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA2/order.SA28.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA29.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA2.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA1/order.SA30.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA31.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA2/order.SA32.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA33.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA2/order.SA34.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA1/order.SA35.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA36.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA1/order.SA37.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA38.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA2/order.SA39.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA2/order.SA3.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA40.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA1/order.SA4.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA1/order.SA5.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA6.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA3/order.SA7.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA2/order.SA8.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SA2/order.SA9.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySA/
+
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS1/order.SS10.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS1/order.SS11.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS1/order.SS12.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS1/order.SS13.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS2/order.SS14.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS1/order.SS15.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS1/order.SS16.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS3/order.SS17.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS1/order.SS18.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS1/order.SS19.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS2/order.SS1.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS3/order.SS20.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS1/order.SS21.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS3/order.SS22.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS1/order.SS23.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS2/order.SS24.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS3/order.SS25.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS3/order.SS26.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS1/order.SS27.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS3/order.SS28.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS2/order.SS29.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS1/order.SS2.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS3/order.SS30.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS2/order.SS31.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS2/order.SS32.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS3/order.SS33.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS2/order.SS34.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS3/order.SS35.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS2/order.SS36.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS1/order.SS37.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS1/order.SS38.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS2/order.SS39.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS3/order.SS3.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS3/order.SS40.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS3/order.SS4.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS3/order.SS5.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS2/order.SS6.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS1/order.SS7.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS2/order.SS8.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/ ; 
+cp /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/SS2/order.SS9.txt /cluster/project/gdc/shared/p298/Rishi/lepmap3/x1_158_noho/MostLikelySS/
+
+for i in $(ls | grep order | grep SA | grep .txt); do awk '{print FILENAME,$0}' $i;done | grep -v COUNT | grep -v java | grep -v male | grep -v likelihood | perl -pe 's/order// ; s/.SA.txt /\t/' > LOD16_SA_MLlod13.txt
+cat <(echo -e "LG\tid\tcpos") LOD16_SA_MLlod13.txt | cut -f 1-3 > LOD16_SA_noho_data.txt
+
+
+for i in $(ls | grep order | grep SS | grep .txt); do awk '{print FILENAME,$0}' $i;done | grep -v COUNT | grep -v java | grep -v male | grep -v likelihood | perl -pe 's/order// ; s/.SS.txt /\t/' > LOD16_SS_MLlod13.txt
+cat <(echo -e "LG\tid\tmpos\tfpos") LOD16_SS_MLlod13.txt | cut -f 1-4 > LOD16_SS_noho_data.txt
+
+#then move these data.txt files to local computer open in cal/excel and save as .csv
