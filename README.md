@@ -19,4 +19,4 @@
 #this contains all bash/command line scripts used to carry out linkage mapping with lepmap3
 # *05_lepmap_map_organizer.R*
 #this is an R script to analyse sex averaged and sex specific maps from lepmap3 mapping
-#it also includes all scripts to carry out synteny analysis and plot circlize figures
+#it also includes all scripts to carry out synteny analysis and plot circlize figure 2 and boxplot figure 3
