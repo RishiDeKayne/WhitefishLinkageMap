@@ -5,7 +5,11 @@
 #     2. the input file One_perLocus_trans_newgenotype_TEST158_NO_HOMOZYGOUS.csv
 #     3. a csv. of the sam file from mapping our parental denovo assembly to the Atlantic Salmon genome: Stampy.07.csv stored on dryad at ***
 #     4. the info file with lengths of salmon chromosomes for plotting SalmonChromosomes.csv
-#     5. the info file with salmon chromsome arm information inc. lenghts and LORe/AORe assignment: SalmonChromosomeArms.csv
+#     5. the info file with salmon chromsome arm information inc. lengths and LORe/AORe assignment - 
+#           these are taken from Lien et al. 2016 (nature) and Robertson et al. 2017 (Genome Biology): SalmonChromosomeArms.csv
+
+#it will allow the analysis of map data including map summaries and comparisons
+# as well as plotting figures 2 and 3 in ***
 #########################################
 #########################################
 #     Species average maps
@@ -63,7 +67,7 @@ SSmap$LG <- as.factor(SSmap$LG)
 #can order to check marker numbers from lepmap do not exceed number of markers in starting file
 orderedSSmap<- SSmap[order(SSmap$id),]
 #load in the loci/genotype file used before for python script
-#loci <- read.csv("/home/rishi/Dropbox/Rishi_Linux/lepmap3/PrepInput/One_perLocus_trans_newgenotype_TEST158.csv")
+#loci <- read.csv("One_perLocus_trans_newgenotype_TEST158.csv")
 #transpose so can match rows in id columns
 locit <- as.data.frame(t(loci))
 #remove marker row
