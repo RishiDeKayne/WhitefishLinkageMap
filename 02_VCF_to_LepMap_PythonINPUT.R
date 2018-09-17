@@ -14,7 +14,7 @@
 require(stringr)
 library(plyr)
 library(dplyr)
-#load in vcf file
+#load in vcf file NOTE THIS FILE IS NAMED 'FileS1' ON THE JOURNAL WEBSITE 
 vcf<-read.table("ConcatParentsQ30Thresh20HaploCalled_Total.g5mac3.biallelic.recode.vcf")
 
 ####### we don't want any snps from rad loci with multiple (>3 hits)
