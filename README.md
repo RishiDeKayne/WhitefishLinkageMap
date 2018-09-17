@@ -3,7 +3,7 @@
 
 #All scripts are numbered with output/intermediate files included
 
-#Large files required: i.e. VCF file, lepmap .linkage input file and Stampy .sam file will be uploaded to a data repository
+#Large files required: i.e. VCF file, lepmap .linkage input file will be uploaded to a data repository
 #as part of the paper submission process
 
 #the files are split into two sets. The first, up to the production of the VCF file containings:
