@@ -45,6 +45,7 @@ perl-init
 #then run demultiplexing script - make sure the fastq file is in the directory you run the sh script from:
 /cluster/project/gdc/shared/p129/bin/demultiplexing.sh ./GQI122Qual30Part1.noPhiXreads.fastq /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI122Part1/GQI122Barcodes /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI122Qual30Part1/ 90
 
+#the following script header_recoverfromstacks.sh from David Marques can be found at https://github.com/marqueda/Varia 
 scp /cluster/project/gdc/shared/p129/bin/header_recoverfromstacks.sh .
 
 ./header_recoverfromstacks.sh /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI122Qual30Part1/Samples/ /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI122Part1/GQI122Barcodes /cluster/project/gdc/shared/p298/data/GQI122Part1/GQI122Part1.fastq 
