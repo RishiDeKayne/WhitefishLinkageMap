@@ -205,6 +205,7 @@ bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc; module load gcc/
 GQI120.noPhiXreads.fast /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI120/GQI120Barcodes /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI120/DemultiFiles/ 90"
 
 #now to retrieve headers and rename individuals - from interactive node
+#the following script header_recoverfromstacks.sh from David Marques can be found at https://github.com/marqueda/Varia 
 /cluster/project/gdc/shared/p129/bin/header_recoverfromstacks.sh /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI120/DemultiFiles/ /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI120/GQI120Barcodes /cluster/project/gdc/shared/p298/data/GQI120.fastq 
 
 #now to get read counts for each individual:
@@ -261,6 +262,7 @@ perl-init
 /cluster/project/gdc/shared/p129/bin/demultiplexing.sh ./GQI121.noPhiXreads.fastq /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI121/GQI121Barcodes /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI121/ 90
 
 #now rename files with fishec conventions and change read headers - needs old headers after process_radtags changes headers
+#the following script header_recoverfromstacks.sh from David Marques can be found at https://github.com/marqueda/Varia 
 scp /cluster/project/gdc/shared/p129/bin/header_recoverfromstacks.sh .
 ./header_recoverfromstacks.sh /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI121/Samples/ /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI121/GQI121Barcodes /cluster/project/gdc/shared/p298/data/GQI121.fastq 
 
@@ -359,6 +361,7 @@ perl-init
 /cluster/project/gdc/shared/p129/bin/demultiplexing.sh ./GQI126.noPhiXreads.fastq /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI126/GQI126Barcodes /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI126/ 90
 
 #now rename files with fishec conventions and change read headers - needs old headers after process_radtags changes headers
+#the following script header_recoverfromstacks.sh from David Marques can be found at https://github.com/marqueda/Varia 
 scp /cluster/project/gdc/shared/p129/bin/header_recoverfromstacks.sh .
 ./header_recoverfromstacks.sh /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI126/Samples/ /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI126/GQI126Barcodes /cluster/project/gdc/shared/p298/data/GQI126.fastq 
 
