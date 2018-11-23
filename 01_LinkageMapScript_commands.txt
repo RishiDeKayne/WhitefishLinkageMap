@@ -410,6 +410,7 @@ bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc gatk/3.7 picard-t
 
 #now to make vcf/call genotypes --genotyping_mode <DISCOVERY> \ --output_mode EMIT_ALL_CONFIDENT_SITES \ --min_base_quality_score 20 \ -stand_call_conf 20 \ --genotype_likelihoods_model BOTH \
 
+#the following genotyping script GATKHaplotypeCaller.sh can be found in this folder (https://github.com/RishiDeKayne/WhitefishLinkageMap) 
 bsub -n5 -W 90:00 -R "rusage[mem=10000]" "module load java gdc; ./GATKHaploCaller.sh" 
 
 
