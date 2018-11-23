@@ -92,7 +92,7 @@ wget -i DataDownload.txt
 #next we want to concatenate files and unzip the files to do a fastqc report
 zcat GQI119*.fastq.gz > GQI119.fastq
 
-#this unfortunately timed out on the interactive node so now submitted as a job with 24 hours wall time
+#
 bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc; zcat GQI119*.fastq.gz > GQI119.fastq"
 
 #next to use fastqc to see the quality of the reads
@@ -101,7 +101,7 @@ bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc; zcat GQI119*.fas
 # and then gives the zipped fastqc file to identify quailty in
 bsub -n1 -W 4:00 -R "rusage[mem=10000]" "module load java gdc fastqc/0.11.4; fastqc GQI119.fastq"
 
-#then move data to my computer- in new terminal:
+
 scp rdekayne@euler.ethz.ch:/cluster/project/gdc/shared/p298/data/GQI119_fastqc.html .
 #and
 scp rdekayne@euler.ethz.ch:/cluster/project/gdc/shared/p298/data/GQI119_fastqc.zip .
@@ -109,15 +109,7 @@ scp rdekayne@euler.ethz.ch:/cluster/project/gdc/shared/p298/data/GQI119_fastqc.z
 #then look at fastqc report
 
 #next to map to phix genome to check the right amount of phix was spiked
-#move pre written script to my computer and alter code
 scp rishidek@gdcsrv1:/gdc_home5/groups/p129/scripts/PhiX_removal.sh .
-
-# - had to redirect filepath to /cluster/project/gdc/shared/p129/ref-genome/phix174.fa
-#Then move back to my directory in euler. Had issue with bashrc file so:
-nano ~/.bashrc
-#now edit to add PATH to the bin folder in the p129 folder so even in my directory it will look therefor how to execute files such as the sh script from Joana and David
-source ~/.bashrc
-#can check path with echo $PATH
 
 #and to do the removal
 bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc; PhiX_removal.sh ../../data/GQI119.fastq GQI119"
@@ -136,7 +128,7 @@ bsub -W 8:00 -Is /bin/bash
 expr $(cat GQI119.noPhiXreads.fastq | wc -l) / 4
 # OUTPUT 130071600
 
-#now also run alignment for the salmon genome - want to know how much is probably whitefish
+#now also run alignment for the salmon genome - want to know how much is whitefish
 #since salmon genome is so much bigger needs higher memory so altered scrip to have more nodes, more wall time and more memory:
 bsub -n4 -W 72:00 -R "rusage[mem=30000]" "module load java gdc bowtie2; ./Salmon_removal.sh /cluster/project/gdc/shared/p298/data/GQI119.fastq GQI119"
 #163963600 reads; of these:
@@ -185,7 +177,6 @@ bsub -n1 -W 4:00 -R "rusage[mem=10000]" "module load java gdc fastqc/0.11.4; fas
 scp rdekayne@euler.ethz.ch:/cluster/project/gdc/shared/p298/data/GQI120_fastqc.html .
 
 #phix removal
-#took agest to figure out how to run, checked bashrc and used chmod again, also did source bashrc again...then worked....
 bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc bowtie2/2.2.3; PhiX_removal.sh /cluster/project/gdc/shared/p298/data/GQI120.fastq GQI120"
 #250457031 reads; of these:
 #  250457031 (100.00%) were unpaired; of these:
@@ -344,7 +335,7 @@ bsub -W 8:00 -Is /bin/bash
 expr $(cat GQI126.noPhiXreads.fastq | wc -l) / 4
 # 151240935
 
-#now also run alignment for the salmon genome - want to know how much is probably whitefish
+#now also run alignment for the salmon genome - want to know how much is whitefish
 #since salmon genome is so much bigger needs higher memory so altered scrip to have more nodes, more wall time and more memory:
 bsub -n4 -W 72:00 -R "rusage[mem=10000]" "module load java gdc bowtie2; ./Salmon_removal.sh /cluster/project/gdc/shared/p298/data/GQI126.fastq GQI126"
 #159854258 reads; of these:
