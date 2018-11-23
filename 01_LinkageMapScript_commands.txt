@@ -156,6 +156,8 @@ perl-init
 #then run demultiplexing script - make sure the fastq file is in the directory you run the sh script from:
 /cluster/project/gdc/shared/p129/bin/demultiplexing.sh ./GQI119.noPhiXreads.fastq /cluster/project/gdc/shared/p298/Rishi/PhiXRemoval/GQI119Barcodes /cluster/project/gdc/shared/p298/Rishi/Demultiplex/ 90
 #now rename files with fishec conventions and change read headers - needs old headers after process_radtags changes headers
+
+#the following script header_recoverfromstacks.sh from David Marques can be found at https://github.com/marqueda/Varia 
 scp /cluster/project/gdc/shared/p129/bin/header_recoverfromstacks.sh .
 ./header_recoverfromstacks.sh \ /cluster/project/gdc/shared/p298/Rishi/Demultiplex/ \ GQI119barcodes /cluster/project/gdc/shared/p298/data/GQI119.fastq
 #then count lines in each new file:
