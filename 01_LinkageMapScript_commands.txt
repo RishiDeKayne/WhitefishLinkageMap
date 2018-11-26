@@ -399,7 +399,7 @@ get rid of 19, 100, 121, 125, 145, 149, 150, 157, 158, 162,
 ###################################################################################################################
 ###################################################################################################################
 
-#already got parent Q30 fasta index - all zipped fastq files are in Allx1Fastas file - modified runBowtie2RADID.sh (from https://github.com/joanam/scripts) to use .gz files - move into Allx1Fastas folder
+#already got parent Q30 fasta index - all zipped fastq files are in Allx1Fastas file - use runBowtie2RADID.sh (from https://github.com/joanam/scripts)
 bsub -n4 -W 24:00 -R "rusage[mem=10000]" "module load java gdc gcc/4.9.2 stacks/1.40 bowtie2/2.2.3; /cluster/project/gdc/shared/p298/Rishi/runBowtie2RADID.sh /cluster/project/gdc/shared/p298/Rishi/parents/index > CorDenovoParentsQ30TOTAL_Bowtie2log.txt"
 #########
 
