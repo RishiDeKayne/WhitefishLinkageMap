@@ -17,6 +17,7 @@ bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load gcc/4.8.2 gdc java/1.8.0_7
 #now fastqc on these reads:
 bsub -n1 -W 4:00 -R "rusage[mem=10000]" "module load java gdc fastqc/0.11.4; fastqc /cluster/project/gdc/shared/p298/data/GQI122Part1/GQI122Part1Qual30.trim.fastq"
 
+# the following script PhiX_removal.sh can be found at: https://github.com/joanam/scripts
 bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc bowtie2/2.2.3; PhiX_removal.sh /cluster/project/gdc/shared/p298/data/GQI122Part1/GQI122Part1Qual30.trim.fastq GQI122Qual30Part1"
 #82022671 reads; of these:
 #  82022671 (100.00%) were unpaired; of these:
@@ -110,6 +111,7 @@ scp rdekayne@euler.ethz.ch:/cluster/project/gdc/shared/p298/data/GQI119_fastqc.z
 #then look at fastqc report
 
 #next to map to phix genome to check the right amount of phix was spiked
+# the following script PhiX_removal.sh can be found at: https://github.com/joanam/scripts
 scp rishidek@gdcsrv1:/gdc_home5/groups/p129/scripts/PhiX_removal.sh .
 
 #and to do the removal
@@ -179,7 +181,7 @@ bsub -n1 -W 4:00 -R "rusage[mem=10000]" "module load java gdc fastqc/0.11.4; fas
 
 scp rdekayne@euler.ethz.ch:/cluster/project/gdc/shared/p298/data/GQI120_fastqc.html .
 
-#phix removal
+#phix removal - the following script PhiX_removal.sh can be found at: https://github.com/joanam/scripts
 bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc bowtie2/2.2.3; PhiX_removal.sh /cluster/project/gdc/shared/p298/data/GQI120.fastq GQI120"
 #250457031 reads; of these:
 #  250457031 (100.00%) were unpaired; of these:
@@ -233,6 +235,7 @@ sed -i "s/.x1.GQI120.fastq//" BarcodeCountsPerIndividualGQI120.txt
 bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load gdc java; zcat GQI121*.fastq.gz > GQI121.fastq"
 bsub -n1 -W 4:00 -R "rusage[mem=10000]" "module load java gdc fastqc/0.11.4; fastqc GQI121.fastq"
 
+# the following script PhiX_removal.sh can be found at: https://github.com/joanam/scripts
 bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc bowtie2/2.2.3; PhiX_removal.sh /cluster/project/gdc/shared/p298/data/GQI121.fastq GQI121"
 #172459229 reads; of these:
 #  172459229 (100.00%) were unpaired; of these:
@@ -320,7 +323,7 @@ bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc; zcat GQI126*.fas
 bsub -n1 -W 4:00 -R "rusage[mem=10000]" "module load java gdc fastqc/0.11.4; fastqc GQI126.fastq"
 
 
-#and to do the removal
+#and to do the removal -# the following script PhiX_removal.sh can be found at: https://github.com/joanam/scripts
 bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc bowtie2/2.2.6; PhiX_removal.sh /cluster/project/gdc/shared/p298/data/GQI126.fastq GQI126"
 # 159854258 reads; of these:
 #  159854258 (100.00%) were unpaired; of these:
