@@ -43,7 +43,7 @@ module load gcc/4.9.2;
 module load stacks/1.40;
 module load perl/5.18.4;
 perl-init
-#then run demultiplexing script - make sure the fastq file is in the directory you run the sh script from:
+#then run demultiplexing script - make sure the fastq file is in the directory you run the sh script from- demultiplexing.sh can be found at https://github.com/joanam/scripts
 /cluster/project/gdc/shared/p129/bin/demultiplexing.sh ./GQI122Qual30Part1.noPhiXreads.fastq /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI122Part1/GQI122Barcodes /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI122Qual30Part1/ 90
 
 #the following script header_recoverfromstacks.sh from David Marques can be found at https://github.com/marqueda/Varia 
@@ -156,7 +156,7 @@ module load gcc/4.9.2;
 module load stacks/1.40;
 module load perl/5.18.4;
 perl-init
-#then run demultiplexing script - make sure the fastq file is in the directory you run the sh script from:
+#then run demultiplexing script - make sure the fastq file is in the directory you run the sh script from- demultiplexing.sh can be found at https://github.com/joanam/scripts
 /cluster/project/gdc/shared/p129/bin/demultiplexing.sh ./GQI119.noPhiXreads.fastq /cluster/project/gdc/shared/p298/Rishi/PhiXRemoval/GQI119Barcodes /cluster/project/gdc/shared/p298/Rishi/Demultiplex/ 90
 #now rename files with fishec conventions and change read headers - needs old headers after process_radtags changes headers
 
@@ -203,6 +203,7 @@ expr $(cat GQI120.noPhiXreads.fastq | wc -l) / 4
 bsub -n1 -W 24:00 -R "rusage[mem=10000]" "cat GQI120.noPhiXreads.fastq | cut -c 1-8 | grep -E "^[ATGC]{8}" | sort | uniq -c | sort -nr > GQI120_barcodecount.txt"
 
 #need to be in directory with fastq file due to ./ in code for sh script
+#demultiplexing.sh can be found at https://github.com/joanam/scripts
 bsub -n1 -W 24:00 -R "rusage[mem=10000]" "module load java gdc; module load gcc/4.9.2; module load stacks/1.40; module load perl/5.18.4; perl-init; /cluster/project/gdc/shared/p129/bin/demultiplexing.sh \
 GQI120.noPhiXreads.fast /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI120/GQI120Barcodes /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI120/DemultiFiles/ 90"
 
@@ -261,7 +262,7 @@ module load gcc/4.9.2;
 module load stacks/1.40;
 module load perl/5.18.4;
 perl-init
-#then run demultiplexing script - make sure the fastq file is in the directory you run the sh script from:
+#then run demultiplexing script - make sure the fastq file is in the directory you run the sh script from -demultiplexing.sh can be found at https://github.com/joanam/scripts
 /cluster/project/gdc/shared/p129/bin/demultiplexing.sh ./GQI121.noPhiXreads.fastq /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI121/GQI121Barcodes /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI121/ 90
 
 #now rename files with fishec conventions and change read headers - needs old headers after process_radtags changes headers
@@ -360,7 +361,7 @@ module load gcc/4.9.2;
 module load stacks/1.40;
 module load perl/5.18.4;
 perl-init
-#then run demultiplexing script - make sure the fastq file is in the directory you run the sh script from:
+#then run demultiplexing script - make sure the fastq file is in the directory you run the sh script from- demultiplexing.sh can be found at https://github.com/joanam/scripts
 /cluster/project/gdc/shared/p129/bin/demultiplexing.sh ./GQI126.noPhiXreads.fastq /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI126/GQI126Barcodes /cluster/project/gdc/shared/p298/Rishi/DemultiplexGQI126/ 90
 
 #now rename files with fishec conventions and change read headers - needs old headers after process_radtags changes headers
