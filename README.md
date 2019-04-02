@@ -1,6 +1,10 @@
 # WhitefishLinkageMap
 # This repository will contain all custom scripts used in De-Kayne & Feulner 2018
 
+If you use/adapt any of these scripts please cite this repository: 
+[![DOI](https://zenodo.org/badge/130111646.svg)](https://zenodo.org/badge/latestdoi/130111646)
+
+
 #All scripts are numbered with output/intermediate files included
 
 #Large files required: i.e. VCF file, lepmap .linkage input file will be uploaded to a data repository
