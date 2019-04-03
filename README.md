@@ -1,7 +1,10 @@
 # WhitefishLinkageMap
 # This repository will contain all custom scripts used in De-Kayne & Feulner 2018
 
-If you use/adapt any of these scripts please cite this repository: 
+If you use/adapt any of these scripts please cite the associated paper:
+http://www.g3journal.org/content/8/12/3745.abstract
+
+and this repository: 
 [![DOI](https://zenodo.org/badge/130111646.svg)](https://zenodo.org/badge/latestdoi/130111646)
 
 
